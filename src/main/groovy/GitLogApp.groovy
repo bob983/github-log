@@ -1,51 +1,22 @@
-import java.time.ZonedDateTime
-
 class GitLogApp {
 
     public static void main(String[] args) {
         def (token, owner, project, base, head) = args;
-        def result = new Github(token, owner, project).log(base, head)
-        def commits = result.data['commits']
-        commits
-                .findAll { it['parents'].size() == 1 } // remove PR/merge commits
-                .collect(rawCommitToCardLogEntry)
-                .groupBy { entry -> entry.card.board }
-                .sort()
-                .each(print)
-    }
+        def github = new Github(token, owner, project)
 
-    def static rawCommitToCardLogEntry = { row ->
-        def commit = row['commit']
-        def author = commit['author']
-        def params = [
-                authorEmail: author['email'],
-                fullMessage: commit['message'],
-                card       : Card.DUMMY,
-                commitId   : row['sha'],
-                commitDate : ZonedDateTime.parse(author['date'].toString())
-        ]
+        def changelog = github.log(base, head)
 
-        def res = params.fullMessage =~ /(?s)^([A-Za-z]+)[- :]?(\d+)(.*)/
-        if (res.matches()) {
-            def card = new Card(board: res[0][1].toUpperCase(), cardNumber: res[0][2])
-            params['card'] = card;
-        }
-        new CardLogEntry(params)
-    }
+        println "\n\n$changelog\n\n"
 
-
-    def static print = { val ->
-        def board = val.key
-        def cardEntries = val.value.sort()
-
-        if (board == Card.MISC) {
-            println "## Misc ##\n\n"
+        def release = github.getReleaseForTag(head)
+        if(release) {
+            println "Found release ${release['name']} from ${release['created_at']}, ID=${release['id']}"
+            github.updateRelease(release['id'], changelog)
         } else {
-            println "## Board $board##\n\n"
+            println "Did not find release for tag $head"
         }
 
-        cardEntries.each { entry -> println "  ${entry.card.markdowned()} - [${entry.commitDate.toLocalDate()}] \"${entry.fullMessage.split("\n").first()}\" $entry.commitId" }
-        println ""
     }
+
 
 }
