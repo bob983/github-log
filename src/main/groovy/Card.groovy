@@ -6,7 +6,6 @@ import groovy.transform.Sortable
 class Card {
 
     public static String MISC = "Misc";
-
     public static Card DUMMY = new Card(board: MISC, cardNumber: "")
 
     String board

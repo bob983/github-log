@@ -13,10 +13,15 @@ class GitLogApp {
             println "Found release ${release['name']} from ${release['created_at']}, ID=${release['id']}"
             github.updateRelease(release['id'], changelog)
         } else {
-            println "Did not find release for tag $head"
+            def res = head =~ /v(.*)/
+            if(res.matches()) {
+                def releaseName = res[0][1]
+                println "Creating release $releaseName"
+                github.createRelease(releaseName, head, changelog)
+            } else {
+                println "Tag $head does not have expected format `vSomething`"
+            }
         }
-
     }
-
 
 }
