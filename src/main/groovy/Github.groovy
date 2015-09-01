@@ -50,7 +50,7 @@ class Github {
             )
             result.data
         } catch (ex) {
-            if(ex.response.status == 404) {
+            if (ex.response.status == 404) {
                 return null
             } else {
                 throw new RuntimeException(ex.response.text)
@@ -59,16 +59,23 @@ class Github {
     }
 
     def updateRelease(releaseId, text) {
-        try {
-            rest.patch(
-                    path: "repos/${this.owner}/${this.repo}/releases/${releaseId}",
-                    headers: headers(),
-                    requestContentType: JSON,
-                    body : [body: text]
-            )
-        } catch (ex) {
-            ex.printStackTrace()
-        }
+        rest.patch(
+                path: "repos/${this.owner}/${this.repo}/releases/${releaseId}",
+                headers: headers(),
+                requestContentType: JSON,
+                body : [body: text]
+        )
+    }
+
+    def createRelease(name, tag, text) {
+        rest.post(
+                path: "repos/${this.owner}/${this.repo}/releases",
+                headers: headers(),
+                requestContentType: JSON,
+                body : [body: text, draft: false, prerelease: true, name: name, tag_name: tag]
+        )
+        def release = result.data
+        println "Created release ${release['url']}"
     }
 
     private rawCommitToCardLogEntry = { row ->
