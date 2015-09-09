@@ -68,14 +68,14 @@ class Github {
     }
 
     def createRelease(name, tag, text) {
-        rest.post(
+        def result = rest.post(
                 path: "repos/${this.owner}/${this.repo}/releases",
                 headers: headers(),
                 requestContentType: JSON,
                 body : [body: text, draft: false, prerelease: true, name: name, tag_name: tag]
         )
         def release = result.data
-        println "Created release ${release['url']}"
+        println "Created release ${release['html_url']}"
     }
 
     private rawCommitToCardLogEntry = { row ->
