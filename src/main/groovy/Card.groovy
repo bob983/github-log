@@ -2,7 +2,7 @@ import groovy.transform.EqualsAndHashCode
 import groovy.transform.Sortable
 
 @EqualsAndHashCode
-@Sortable
+@Sortable(includes = ['board','cardNumber'])
 class Card {
 
     public static String MISC = "Misc";
